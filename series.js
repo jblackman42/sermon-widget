@@ -34,7 +34,7 @@ const loadWidget = async () => {
             <div id="series-info-row">
                 <p><strong>${series.Sermon_Series_ID == maxId ? 'Current Series' : `${series.messages.length} week series`}</strong></p>
                 <p>${firstDay}${firstDay != lastDay ? ` - ${lastDay}` : ''}</p>
-                <button id="shareBtn" onclick="share()">Share <i class='fas fa-share-square'></i></button>
+                <button id="shareBtn" onclick="share('Share Series')">Share <i class='fas fa-share-square'></i></button>
             </div>
         </div>
         <div id="sermon-content">
@@ -58,7 +58,7 @@ const loadWidget = async () => {
 }
 loadWidget();
 
-const share = () => {
+const share = (title) => {
 
     // Fallback, Tries to use API only
     // if navigator.share function is
@@ -68,7 +68,7 @@ const share = () => {
 
             // Title that occurs over
             // web share dialog
-            title: 'Share Series',
+            title: title ? title : 'Share',
 
             // URL to share
             url: window.location.href
@@ -84,6 +84,6 @@ const share = () => {
     } else {
 
         // Alerts user if API not available 
-        alert("Browser doesn't support this API !");
+        alert("Browser doesn't support this API!");
     }
 }

@@ -94,7 +94,7 @@ class Series extends HTMLElement {
         // const sermon = series.messages[series.messages.length - 1];
         const sermon = series.messages.filter(message => message.links.filter(link => link.Link_Type_ID == 1).length).pop();
     
-        window.location = `/sermon.html?series=${series.Sermon_Series_ID}&id=${sermon.Sermon_ID}`
+        window.location = `${this.getAttribute('watchurl')}?series=${series.Sermon_Series_ID}&id=${sermon.Sermon_ID}`
     }
 }
 

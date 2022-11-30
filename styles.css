@@ -177,6 +177,7 @@
     text-align: center;
     text-transform: uppercase;
     margin: 0 auto;
+    padding: .5rem 0;
 }
 #widget-card-container #sermon-image-container {
     box-sizing: border-box;
@@ -191,6 +192,7 @@
 #series-info-row p {
     margin: 0;
     margin-right: 2rem;
+    padding: 0;
 }
 #series-info-row button {
     margin: .5rem 0;
@@ -322,6 +324,7 @@
 }
 #video-card-container h1 {
     margin: 0;
+    color: currentColor;
 }
 #video-card-container p {
     margin: 0;
@@ -329,6 +332,7 @@
 #video-card-container h3 {
     margin: 0;
     margin-top: 1rem;
+    color: currentColor;
 }
 #video-card-container .btn {
     /* margin: 1rem 0; */

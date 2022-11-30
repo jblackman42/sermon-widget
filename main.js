@@ -233,7 +233,7 @@ class SermonDetails extends HTMLElement {
                         <div id="other-sermons">
                             ${sermonSeries.map(message => {
                                 return `
-                                    <a href="/sermon.html?series=${this.seriesId}&id=${message.Sermon_ID}">
+                                    <a href="${this.getAttribute('currenturl')}?series=${this.seriesId}&id=${message.Sermon_ID}">
                                         <img src="${message.Sermon_Image ? message.Sermon_Image : currSeries.Series_Image}" alt="${message.Title}" />
                                         <div class="sermon-image-overlay">
                                             <h1>${message.Title}</h1>

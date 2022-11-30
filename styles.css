@@ -17,6 +17,22 @@ html, body {
     z-index: 9999;
 }
 
+#back-btn-container {
+    display: flex;
+    width: 90vw;
+    max-width: 1280px;
+    margin: 0 auto;
+}
+.back-btn {
+    padding: 1rem 0;
+    color: currentColor;
+    text-decoration: none;
+    font-size: 1.25rem;
+}
+.back-btn:hover {
+    text-decoration: underline;
+}
+
 #widget-container {
     width: 90vw;
     max-width: 1280px;
@@ -33,6 +49,34 @@ html, body {
     overflow: hidden;
     display: grid;
     place-items: center;
+    position: relative;
+    padding: 0 !important;
+}
+.series .series-banner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    justify-content: space-between;
+    z-index: 9999;
+    color: white;
+}
+.series .series-banner * {
+    background-color: transparent;
+}
+.series .series-banner p {
+    margin: .5rem;
+}
+.series .series-banner button {
+    border: none;
+    cursor: pointer;
+    color: currentColor;
+    padding: 0 .5rem;
+}
+.series .series-banner button:hover {
+    text-decoration: underline;
 }
 
 .series {
@@ -42,16 +86,20 @@ html, body {
     text-decoration: none;
     border-radius: 4px;
     overflow: hidden;
+    position: relative;
 }
-.series:hover p {
-    filter: brightness(1.25);
+.series img {
+    transition: transform 250ms ease;
+}
+.series:hover img {
+    transform: scale(1.05);
 }
 .series img {
     min-height: 100%;
     width: 100%;
     display: block;
 }
-.series p {
+.series a:last-of-type {
     background-color: #7B2D26;
     border-top: 1px solid black;
     color: white;
@@ -61,6 +109,7 @@ html, body {
     padding: .5rem;
     margin: 0;
     text-transform: uppercase;
+    text-decoration: none;
 }
 #series-btn-container {
     display: flex;
@@ -83,12 +132,12 @@ html, body {
 }
 
 @media screen and (max-width: 768px) {
-    #widget-container {
+    #series-card-container {
         grid-template-columns: 1fr 1fr;
     }
 }
 @media screen and (max-width: 425px) {
-    #widget-container {
+    #series-card-container {
         grid-template-columns: 1fr;
     }
 }
@@ -99,6 +148,7 @@ html, body {
     width: 90vw;
     max-width: 1280px;
     margin: 2rem auto;
+    margin-top: 0;
     box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
     background-color: #ecf0f1;
 }
@@ -109,12 +159,24 @@ html, body {
 }
 #widget-card-container #series-head-row {
     display: flex;
+    padding: 0 1rem;
 }
 #widget-card-container #series-head-row a {
     color: black;
     text-decoration: none;
-    padding: 1rem;
+    padding: 1rem 0;
     text-transform: uppercase;
+    white-space: nowrap;
+}
+@media screen and (max-width: 768px) {
+    #widget-card-container #series-head-row {
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+    #widget-card-container #series-head-row #series-title {
+        order: 999;
+        width: 100%;
+    }
 }
 #widget-card-container #series-title {
     color: black;
@@ -148,6 +210,7 @@ html, body {
     text-transform: uppercase;
     border-radius: 4px;
     cursor: pointer;
+    white-space: nowrap;
 }
 #widget-card-container img {
     width: 100%;
@@ -211,6 +274,21 @@ html, body {
     #series-row {
         flex-direction: column;
     }
+    #widget-card-container #sermon-content {
+        width: 100%;
+        overflow: visible;
+        max-height: none;
+        height: auto;
+    }
+    #widget-card-container #sermon-image-container {
+        margin: 0 auto;
+        width: 75%;
+    }
+}
+@media screen and (max-width: 768px) {
+    #widget-card-container #sermon-image-container {
+        width: 100%;
+    }
 }
 
 /* sermon page */
@@ -232,6 +310,7 @@ html, body {
     width: 90vw;
     max-width: 1280px;
     margin: 2rem auto;
+    margin-top: 0;
     box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
     background-color: #ecf0f1;
     padding: 1rem;
@@ -269,6 +348,8 @@ html, body {
     text-transform: uppercase;
     border-radius: 4px;
     cursor: pointer;
+    text-align: center;
+    white-space: nowrap;
 }
 #video-card-container .btn:hover {
     filter: brightness(1.25);
@@ -282,8 +363,7 @@ html, body {
     background-color: rgba(50, 50, 50, 0.25);
 }
 #other-sermons a {
-    width: 400px;
-    max-width: 33%;
+    max-width: calc((100% / 3) - .175rem);
     flex-shrink: 0;
     position: relative;
 }
@@ -306,4 +386,14 @@ html, body {
 #other-sermons a .sermon-image-overlay h1 {
     margin: 0;
     font-size: 1.25rem;
+}
+@media screen and (max-width: 1024px) {
+    #other-sermons a {
+        max-width: calc((100% / 2) - .175rem);
+    }
+}
+@media screen and (max-width: 768px) {
+    #other-sermons a {
+        max-width: 80%;
+    }
 }

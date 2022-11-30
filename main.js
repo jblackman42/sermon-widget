@@ -34,7 +34,7 @@ class Series extends HTMLElement {
                 seriesDOM.classList.add('series');
                 const seriesImageContainerDOM = document.createElement('a');
                 seriesImageContainerDOM.classList.add('series-image-container');
-                seriesImageContainerDOM.href = `/series.html?id=${seriesView[i].Sermon_Series_ID}`;
+                seriesImageContainerDOM.href = `${this.getAttribute('targeturl')}?id=${seriesView[i].Sermon_Series_ID}`;
             const seriesImageDOM = document.createElement('img');
                 seriesImageDOM.src = seriesView[i].Series_Image;
                 seriesImageDOM.alt = seriesView[i].Title;

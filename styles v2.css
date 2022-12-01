@@ -325,9 +325,11 @@
 #video-card-container h1 {
     margin: 0;
     color: currentColor;
+    padding: 0;
 }
 #video-card-container p {
     margin: 0;
+    padding: 0;
 }
 #video-card-container h3 {
     margin: 0;
@@ -393,5 +395,9 @@
 @media screen and (max-width: 768px) {
     #other-sermons a {
         max-width: 80%;
+    }
+    #video-card-container .row {
+        flex-direction: column;
+        gap: 1rem;
     }
 }

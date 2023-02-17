@@ -1,16 +1,19 @@
 const urlParams = new URLSearchParams(window.location.search);
+const fetchURL = 'https://phc.events/api/widgets'
 
 class Series extends HTMLElement {
     constructor () {
         super();
         this.seriesList = [];
         this.page = 0;
+        this.currentSeriesID;
 
 
-        Promise.resolve(fetch('https://phc.events/api/widgets/sermons'))
+        Promise.resolve(fetch(`${fetchURL}/series`))
             .then(response => response.json())
             .then(data => {
-                this.seriesList = data.sermons;
+                this.seriesList = data;
+                this.currentSeriesID = this.seriesList[0].Sermon_Series_ID;
 
                 this.update();
             })
@@ -28,7 +31,6 @@ class Series extends HTMLElement {
         const seriesCardContainer = document.createElement('div')
         seriesCardContainer.id = 'series-card-container'
         for (let i = 0; i < seriesView.length; i ++) {
-            let currentId = seriesView[i].Sermon_Series_ID;
 
             const seriesDOM = document.createElement('div');
                 seriesDOM.classList.add('series');
@@ -36,7 +38,7 @@ class Series extends HTMLElement {
                 seriesImageContainerDOM.classList.add('series-image-container');
                 seriesImageContainerDOM.href = `${this.getAttribute('targeturl')}?id=${seriesView[i].Sermon_Series_ID}`;
             const seriesImageDOM = document.createElement('img');
-                seriesImageDOM.src = seriesView[i].Series_Image;
+                seriesImageDOM.src = `https://my.pureheart.org/ministryplatformapi/files/${seriesView[i].Series_File_ID}`;
                 seriesImageDOM.alt = seriesView[i].Title;
             const seriesTitleDOM = document.createElement('a');
                 seriesTitleDOM.innerText = 'View More';
@@ -52,7 +54,7 @@ class Series extends HTMLElement {
                 seriesBanner.appendChild(watchNowBtn);
     
             seriesImageContainerDOM.appendChild(seriesImageDOM);
-            if (this.seriesList[0].Sermon_Series_ID == currentId) seriesDOM.appendChild(seriesBanner)
+            if (seriesView[i].Sermon_Series_ID == this.currentSeriesID) seriesDOM.appendChild(seriesBanner)
             seriesDOM.appendChild(seriesImageContainerDOM);
             seriesDOM.appendChild(seriesTitleDOM);
             seriesCardContainer.appendChild(seriesDOM);
@@ -88,45 +90,68 @@ class Series extends HTMLElement {
         this.page --;
         this.update();
     }
-    watchLatest = () => {
-        console.log('watch latest')
-        const series = this.seriesList[0];
-        // const sermon = series.messages[series.messages.length - 1];
-        const sermon = series.messages.filter(message => message.links.filter(link => link.Link_Type_ID == 1).length).pop();
+    watchLatest = async () => {
+        const currSeriesID = this.seriesList[0].Sermon_Series_ID;
+        Promise.resolve(fetch(`${fetchURL}/sermons?SeriesID=${currSeriesID}`))
+            .then(response => response.json())
+            .then(data => {
+                const recentSermonID = data[0].Sermon_ID;
+                window.location = `${this.getAttribute('watchurl')}?series=${currSeriesID}&id=${recentSermonID}`
+            })
+        // const series = this.seriesList[0];
+        // const sermon = series.messages.filter(message => message.links.filter(link => link.Link_Type_ID == 1).length).pop();
     
-        window.location = `${this.getAttribute('watchurl')}?series=${series.Sermon_Series_ID}&id=${sermon.Sermon_ID}`
+        // window.location = `${this.getAttribute('watchurl')}?series=${series.Sermon_Series_ID}&id=${sermon.Sermon_ID}`
     }
 }
 
 class SeriesDetails extends HTMLElement {
     constructor () {
         super();
+        this.id = urlParams.get('id');
+        this.seriesList;
+        this.sermonList;
+        this.series;
 
-
-        Promise.resolve(fetch('https://phc.events/api/widgets/sermons'))
+        Promise.resolve(fetch(`${fetchURL}/series`))
             .then(response => response.json())
             .then(data => {
-                this.seriesList = data.sermons;
+                this.seriesList = data;
 
-                this.update();
+                Promise.resolve(fetch(`${fetchURL}/sermons?SeriesID=${this.id}`))
+                    .then(response => response.json())
+                    .then(data => {
+                        this.sermonList = data;
+                        this.series = this.seriesList.filter(series => series.Sermon_Series_ID == this.id)[0]
+                        this.update();
+                    })
             })
+
 
 
     }
     update = () => {
-        this.id = urlParams.get('id');
-        if (!urlParams.get('id')) return;
-
-        const seriesIds = this.seriesList.map(series => series.Sermon_Series_ID);
-        const maxId = Math.max(...seriesIds)
-        const minId = Math.min(...seriesIds)
-        let series = this.seriesList.filter(series => series.Sermon_Series_ID == this.id)[0]
-    
-        const firstDay = new Date(series.messages[0].Sermon_Date).toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric'});
-        const lastDay = new Date(series.messages[series.messages.length - 1].Sermon_Date).toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric'})
-        
         const widgetCardContainer = document.createElement('div');
         widgetCardContainer.id = 'widget-card-container';
+        
+        if (!this.sermonList.length) {
+            const widgetCardHTML = `
+                <h1>No Sermons Found</h1>
+                <p>Please Check Back Later</p>
+            `
+            widgetCardContainer.innerHTML = widgetCardHTML;
+            this.appendChild(widgetCardContainer)
+
+            return;
+        }
+        const seriesIDs = this.seriesList.map(series => series.Sermon_Series_ID);
+            const nextSeriesID = seriesIDs[seriesIDs.indexOf(parseInt(this.id)) - 1];
+            const prevSeriesID = seriesIDs[seriesIDs.indexOf(parseInt(this.id)) + 1];
+        const isCurrSeries = this.seriesList[0].Sermon_Series_ID == this.id;
+        const isLastSeries = this.seriesList[this.seriesList.length-1].Sermon_Series_ID == this.id;
+        const firstDay = new Date(this.sermonList[0].Sermon_Date).toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric'});
+        const lastDay = new Date(this.sermonList[this.sermonList.length - 1].Sermon_Date).toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric'});
+
 
         const backButtonContainer = document.createElement('div');
             backButtonContainer.id = 'back-btn-container';
@@ -139,32 +164,32 @@ class SeriesDetails extends HTMLElement {
     
         const widgetCardHTML = `
         <div id="series-head-row">
-            <a ${series.Sermon_Series_ID == maxId ? 'style="opacity: 0; cursor: default;"' : `href="${this.getAttribute('currenturl')}?id=${seriesIds[seriesIds.indexOf(parseInt(this.id)) - 1]}"`}><i class='fas fa-arrow-left'></i> next series</a>
-            <h1 id="series-title">${series.Title}</h1>
-            <a ${series.Sermon_Series_ID == minId ? 'style="opacity: 0; cursor: default;"' : `href="${this.getAttribute('currenturl')}?id=${seriesIds[seriesIds.indexOf(parseInt(this.id)) + 1]}"`}>prevous series <i class='fas fa-arrow-right'></i></a>
+        <a ${isLastSeries ? `disabled style='opacity:.5; cursor:default'` : `href="${this.getAttribute('currenturl')}?id=${prevSeriesID}"`} ><i class='fas fa-arrow-left'></i> prevous series</a>
+        <h1 id="series-title">${this.series.Title}</h1>
+        <a ${isCurrSeries ? `disabled style='opacity:.5; cursor:default'` : `href="${this.getAttribute('currenturl')}?id=${nextSeriesID}"`} >next series <i class='fas fa-arrow-right'></i></a>
         </div>
         <div id="series-row">
             <div id="sermon-image-container">
-                <img src="${series.Series_Image}" alt="${series.Title}"/>
+                <img src="https://my.pureheart.org/ministryplatformapi/files/${this.series.Series_File_ID}" alt="${this.series.Title}"/>
                 <div id="series-info-row">
-                    <p><strong>${series.Sermon_Series_ID == maxId ? 'Current Series' : `${series.messages.length} week series`}</strong></p>
+                    <p><strong>${isCurrSeries ? 'Current Series' : `${this.sermonList.length} week series`}</strong></p>
                     <p>${firstDay}${firstDay != lastDay ? ` - ${lastDay}` : ''}</p>
                     <button id="shareBtn" onclick="share('Share Series', 'Check out this series from Pure Heart Church!')">Share</button>
                 </div>
             </div>
             <div id="sermon-content">
-                ${series.messages.map(message => {
-                    const date = new Date(message.Sermon_Date).toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric'});
-                    return `
-                    <a class="messages" href="${this.getAttribute('targeturl')}?series=${this.id}&id=${message.Sermon_ID}">
-                        <img src="${message.Sermon_Image ? message.Sermon_Image : series.Series_Image}" alt="${message.Title}"/>
-                        <div class="sermon-info">
-                            <p class="sermon-title">${message.Title}</p>
-                            <p>${date} | ${message.Speaker}</p>
-                        </div>
-                    </a>
-                    `
-                }).join('')}
+            ${this.sermonList.map(message => {
+                const date = new Date(message.Sermon_Date).toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric'});
+                return `
+                <a class="messages" href="${this.getAttribute('targeturl')}?series=${this.id}&id=${message.Sermon_ID}">
+                    <img src="https://my.pureheart.org/ministryplatformapi/files/${message.Sermon_File_ID || this.series.Series_File_ID}" alt="${message.Title}"/>
+                    <div class="sermon-info">
+                        <p class="sermon-title">${message.Title}</p>
+                        <p>${date} | ${message.Speaker}</p>
+                    </div>
+                </a>
+                `
+            }).join('')}
             </div>
         </div>
         
@@ -178,30 +203,32 @@ class SermonDetails extends HTMLElement {
     constructor () {
         super();
 
+        this.id = urlParams.get('id');
+        this.seriesId = urlParams.get('series');
+        this.seriesList;
+        this.sermonList;
+        this.series;
 
-        Promise.resolve(fetch('https://phc.events/api/widgets/sermons'))
+        Promise.resolve(fetch(`${fetchURL}/series?SeriesID=${this.seriesId}`))
             .then(response => response.json())
             .then(data => {
-                this.seriesList = data.sermons;
+                this.series = data[0];
 
-                this.update();
+                Promise.resolve(fetch(`${fetchURL}/sermons?SeriesID=${this.seriesId}`))
+                    .then(response => response.json())
+                    .then(data => {
+                        this.sermonList = data;
+                        this.sermon = this.sermonList.filter(sermon => sermon.Sermon_ID == this.id)[0]
+                        this.update();
+                    })
             })
 
 
     }
     update = () => {
-            this.id = urlParams.get('id');
-            this.seriesId = urlParams.get('series');
+            const videoURL = this.sermon.Watch_URL || null
+            const audioURL = this.sermon.Listen_URL || null
 
-            if (!urlParams.get('id') || !urlParams.get('series')) return;
-
-            this.sermon = this.seriesList.filter(series => series.Sermon_Series_ID == this.seriesId)[0].messages.filter(message => message.Sermon_ID == this.id)[0]
-            const currSeries = this.seriesList.filter(series => series.Sermon_Series_ID == this.seriesId)[0]
-            const videoURL = this.sermon.links.filter(link => link.Link_Type_ID == 1).length ? this.sermon.links.filter(link => link.Link_Type_ID == 1)[0].Link_URL : null;
-            const audioURL = this.sermon.links.filter(link => link.Link_Type_ID == 2).length ? this.sermon.links.filter(link => link.Link_Type_ID == 2)[0].Link_URL : null;
-        
-            const sermonSeries = this.seriesList.filter(series => series.Sermon_Series_ID == this.seriesId)[0].messages.filter(message => message.Sermon_ID != this.id);
-        
             const mobile = this.mobileCheck();
             
             const sermonContainerDOM = document.createElement('div')
@@ -228,13 +255,13 @@ class SermonDetails extends HTMLElement {
                             ${audioURL ? `<a href="${audioURL}" target="_blank" class="btn">Listen</a>` : ''}
                         </div>
                     </div>
-                    ${sermonSeries.length ? `<h3>Other Sermons From This Series:</h3>
+                    ${this.sermonList.length ? `<h3>Other Sermons From This Series:</h3>
                     <div class="row">
                         <div id="other-sermons">
-                            ${sermonSeries.map(message => {
+                            ${this.sermonList.map(message => {
                                 return `
                                     <a href="${this.getAttribute('currenturl')}?series=${this.seriesId}&id=${message.Sermon_ID}">
-                                        <img src="${message.Sermon_Image ? message.Sermon_Image : currSeries.Series_Image}" alt="${message.Title}" />
+                                        <img src="https://my.pureheart.org/ministryplatformapi/files/${message.Sermon_File_ID || this.series.Series_File_ID}" alt="${message.Title}" />
                                         <div class="sermon-image-overlay">
                                             <h1>${message.Title}</h1>
                                             <p>${message.Speaker}</p>
@@ -256,13 +283,16 @@ class SermonDetails extends HTMLElement {
                 hls.attachMedia(video);
             } else if (!mobile && videoURL) {
                 var video = document.getElementById("video");
-                video.style.backgroundImage = `url('${this.sermon.Sermon_Image}')`
+                video.style.backgroundImage = `url('https://my.pureheart.org/ministryplatformapi/files/${this.sermon.Sermon_File_ID || this.series.Series_File_ID}')`
                 video.style.filter = 'brightness(.25)';
                 var videoError = document.querySelector('.video-error');
                 videoError.innerText = 'Playback error: Please try again later.'
                 videoError.style.visibility = 'visible';
                 videoError.style.display = 'block';
             } else if (!videoURL) {
+                var video = document.querySelector("video");
+                video.style.backgroundImage = `url('https://my.pureheart.org/ministryplatformapi/files/${this.sermon.Sermon_File_ID || this.series.Series_File_ID}')`
+                video.style.filter = 'brightness(.25)';
                 var videoError = document.querySelector('.video-error');
                 videoError.innerText = 'Video Not Yet Available. Try Again Later'
                 videoError.style.visibility = 'visible';
